@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Premium Passport Photo Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <meta name="description" content="Create professional passport size photos with AI background removal instantly at Onlye Gamerz Studio.">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.0/dist/ort.min.js"></script>
+</head>
+<body>
+  <div class="app-background"></div>
+  <div class="container">
+    <header>
+      <h1>Passport Photo Studio</h1>
+      <p>Professional grade output. Instant AI background removal.</p>
+    </header>
+
+    <div class="toolbar panel">
+      <div class="input-group">
+        <label class="btn-primary" for="upload">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+          Upload Photo
+        </label>
+        <input type="file" id="upload" accept="image/*" />
+        <span id="fileName" class="file-name">No file selected</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="input-group">
+        <label>Background Color</label>
+        <select id="bgColor" class="select-css">
+          <option value="#ffffff">Professional White</option>
+          <option value="#87CEFA">Studio Blue</option>
+          <option value="#d3d3d3">Neutral Gray</option>
+          <option value="transparent">Transparent (PNG)</option>
+        </select>
+      </div>
+
+      <div class="divider"></div>
+
+      <label class="toggle-wrap">
+        <input type="checkbox" id="removeBg" />
+        <span class="slider round"></span>
+        <span class="toggle-label">AI Remove Canvas BG</span>
+      </label>
+    </div>
+
+    <div class="editor panel">
+      <div class="canvas-wrapper" id="canvasWrapper">
+        <div id="loadingOverlay" class="loading-overlay hidden">
+          <div class="spinner"></div>
+          <p id="loadingText">Processing AI Image...</p>
+        </div>
+        <canvas id="canvas" width="413" height="531" tabindex="0"></canvas>
+      </div>
+
+      <div class="controls">
+        <h3>Adjustments</h3>
+        
+        <div class="control-group">
+          <label for="zoom">Zoom <span id="zoomVal" class="val-badge">1.00x</span></label>
+          <input type="range" id="zoom" min="0.1" max="5" step="0.01" value="1" />
+        </div>
+
+        <div class="control-group">
+          <label for="moveX">Horizontal Position (X) <span id="moveXVal" class="val-badge">0px</span></label>
+          <input type="range" id="moveX" min="-500" max="500" value="0" />
+        </div>
+
+        <div class="control-group">
+          <label for="moveY">Vertical Position (Y) <span id="moveYVal" class="val-badge">0px</span></label>
+          <input type="range" id="moveY" min="-500" max="500" value="0" />
+        </div>
+        
+        <div class="divider horizontal"></div>
+
+        <h3>Export & Print</h3>
+        <div class="export-controls">
+          <div class="control-group half">
+            <label for="copies">Sheet Copies</label>
+            <select id="copies" class="select-css">
+              <option value="4">4 Photos</option>
+              <option value="8" selected>8 Photos</option>
+              <option value="12">12 Photos</option>
+              <option value="16">16 Photos</option>
+              <option value="30">30 Photos</option>
+            </select>
+          </div>
+          <button id="printBtn" class="btn-success">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+            Print A4 Sheet
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>

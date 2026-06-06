@@ -1,0 +1,22 @@
+{
+  "name": "Bhaskar Digital Studio",
+  "short_name": "Bhaskar Studio",
+  "description": "Passport photo maker with AI background removal and A4 print sheets.",
+  "start_url": "/Bhaskar-digital-studio/",
+  "scope": "/Bhaskar-digital-studio/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/Bhaskar-digital-studio/favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/Bhaskar-digital-studio/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

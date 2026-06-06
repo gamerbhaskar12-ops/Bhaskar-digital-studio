@@ -15,6 +15,13 @@ const copiesInput = document.getElementById('copies');
 const printBtn = document.getElementById('printBtn');
 const removeBgToggle = document.getElementById('removeBg');
 
+const PASSPORT_WIDTH_MM = 35;
+const PASSPORT_HEIGHT_MM = 45;
+const PRINT_DPI = 300;
+const MM_PER_INCH = 25.4;
+const PASSPORT_PRINT_WIDTH_PX = Math.round((PASSPORT_WIDTH_MM / MM_PER_INCH) * PRINT_DPI);
+const PASSPORT_PRINT_HEIGHT_PX = Math.round((PASSPORT_HEIGHT_MM / MM_PER_INCH) * PRINT_DPI);
+
 // Value indicators
 const zoomVal = document.getElementById('zoomVal');
 const moveXVal = document.getElementById('moveXVal');
@@ -42,15 +49,20 @@ let moveY = 0;
 let drawAnimationFrame = null;
 let isProcessingAI = false; // Lock to prevent race conditions during rapid toggles
 
-// High-quality canvas setup with DPI scaling
 const dpr = window.devicePixelRatio || 1;
-const rect = canvas.getBoundingClientRect();
-canvas.width = rect.width * dpr;
-canvas.height = rect.height * dpr;
-ctx.scale(dpr, dpr);
-ctx.imageSmoothingEnabled = true;
-ctx.imageSmoothingQuality = 'high';
-console.log('Canvas DPI scaling enabled:', dpr, 'Original canvas:', rect.width, 'x', rect.height, 'Actual pixels:', canvas.width, 'x', canvas.height);
+
+function setPassportCanvasSize() {
+  canvas.style.width = `${PASSPORT_PRINT_WIDTH_PX}px`;
+  canvas.style.height = 'auto';
+  canvas.width = Math.round(PASSPORT_PRINT_WIDTH_PX * dpr);
+  canvas.height = Math.round(PASSPORT_PRINT_HEIGHT_PX * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  console.log('Passport canvas locked:', PASSPORT_WIDTH_MM, 'x', PASSPORT_HEIGHT_MM, 'mm at', PASSPORT_PRINT_WIDTH_PX, 'x', PASSPORT_PRINT_HEIGHT_PX, 'px');
+}
+
+setPassportCanvasSize();
 
 function showLoading(text) {
   loadingText.textContent = text;
@@ -59,20 +71,6 @@ function showLoading(text) {
 
 function hideLoading() {
   loadingOverlay.classList.add('hidden');
-}
-
-function setHighResCanvasSize(width, height) {
-  const rect = canvas.getBoundingClientRect();
-  width = Math.max(width, Math.round(rect.width));
-  height = Math.max(height, Math.round(rect.height));
-  canvas.style.width = `${rect.width}px`;
-  canvas.style.height = `${rect.height}px`;
-  canvas.width = width * dpr;
-  canvas.height = height * dpr;
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
-  console.log('High-res canvas size set:', width, 'x', height, 'displayed at', rect.width, 'x', rect.height);
 }
 
 async function loadImageFromBlob(blob) {
@@ -408,7 +406,7 @@ upload.addEventListener('change', (e) => {
         originalWidth = tempImg.naturalWidth;
         originalHeight = tempImg.naturalHeight;
         console.log('Original image dimensions:', originalWidth, 'x', originalHeight, 'pixels');
-        setHighResCanvasSize(originalWidth, originalHeight);
+        setPassportCanvasSize();
         await updateDisplay();
       };
       tempImg.src = originalDataUrl;
@@ -489,17 +487,10 @@ printBtn.addEventListener('click', () => {
 
   const copies = parseInt(copiesInput.value) || 8;
   
-  // Export high-resolution canvas for printing
+  // Export at exactly 300 DPI for a 35mm x 45mm passport photo.
   const printCanvas = document.createElement('canvas');
-  const dpr = window.devicePixelRatio || 1;
-  const displayWidth = canvas.width / dpr;
-  const displayHeight = canvas.height / dpr;
-  const targetDpi = 300;
-  const cssDpi = 96;
-  const exportScale = targetDpi / cssDpi;
-
-  printCanvas.width = Math.round(displayWidth * exportScale);
-  printCanvas.height = Math.round(displayHeight * exportScale);
+  printCanvas.width = PASSPORT_PRINT_WIDTH_PX;
+  printCanvas.height = PASSPORT_PRINT_HEIGHT_PX;
   const printCtx = printCanvas.getContext('2d');
   printCtx.imageSmoothingEnabled = true;
   printCtx.imageSmoothingQuality = 'high';
@@ -508,7 +499,7 @@ printBtn.addEventListener('click', () => {
   // Optimization: use toBlob to prevent massive base64 string allocations and browser crashes
   printCanvas.toBlob((blob) => {
     const photoUrl = URL.createObjectURL(blob);
-    console.log('300 DPI export:', printCanvas.width, 'x', printCanvas.height, 'pixels generated as Blob URL');
+    console.log('Exact passport export:', PASSPORT_WIDTH_MM, 'x', PASSPORT_HEIGHT_MM, 'mm at', printCanvas.width, 'x', printCanvas.height, 'pixels');
     
     let photos = '';
     for (let i = 0; i < copies; i++) {
@@ -529,12 +520,13 @@ printBtn.addEventListener('click', () => {
         <meta charset="UTF-8">
         <title>Print Passport Photos</title>
         <style>
-          body { margin: 0; padding: 15mm; background: white; font-family: sans-serif; }
-          .sheet { width: 180mm; display: grid; grid-template-columns: repeat(4, 35mm); grid-auto-rows: 45mm; gap: 5mm; }
-          .photo-container { width: 35mm; height: 45mm; border: 1px solid rgba(0, 0, 0, 0.4); box-sizing: border-box; overflow: hidden; }
-          .photo { width: 100%; height: 100%; display: block; object-fit: cover; image-rendering: high-quality; }
+          html, body { margin: 0; padding: 0; background: white; font-family: sans-serif; }
+          body { width: 210mm; min-height: 297mm; }
+          .sheet { padding: 15mm; display: grid; grid-template-columns: repeat(4, 35mm); grid-auto-rows: 45mm; gap: 5mm; align-content: start; justify-content: start; }
+          .photo-container { position: relative; width: 35mm; height: 45mm; box-sizing: border-box; overflow: hidden; outline: 0.2mm solid rgba(0, 0, 0, 0.4); }
+          .photo { position: absolute; inset: 0; width: 35mm; height: 45mm; max-width: none; max-height: none; display: block; object-fit: fill; image-rendering: high-quality; }
           @media print { 
-            body { -webkit-print-color-adjust: exact; } 
+            html, body { width: 210mm; height: 297mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; } 
             @page { size: A4 portrait; margin: 0; } 
           }
         </style>

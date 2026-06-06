@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://gamerbhaskar12-ops.github.io/Bhaskar-digital-studio/sitemap.xml

@@ -21,6 +21,10 @@ const PRINT_DPI = 300;
 const MM_PER_INCH = 25.4;
 const PASSPORT_PRINT_WIDTH_PX = Math.round((PASSPORT_WIDTH_MM / MM_PER_INCH) * PRINT_DPI);
 const PASSPORT_PRINT_HEIGHT_PX = Math.round((PASSPORT_HEIGHT_MM / MM_PER_INCH) * PRINT_DPI);
+const PRINT_TEST_WIDTH_MM = 30;
+const PRINT_TEST_HEIGHT_MM = 40;
+const PRINT_TEST_WIDTH_PX = Math.round((PRINT_TEST_WIDTH_MM / MM_PER_INCH) * PRINT_DPI);
+const PRINT_TEST_HEIGHT_PX = Math.round((PRINT_TEST_HEIGHT_MM / MM_PER_INCH) * PRINT_DPI);
 
 // Value indicators
 const zoomVal = document.getElementById('zoomVal');
@@ -487,10 +491,10 @@ printBtn.addEventListener('click', () => {
 
   const copies = parseInt(copiesInput.value) || 8;
   
-  // Export at exactly 300 DPI for a 35mm x 45mm passport photo.
+  // Troubleshooting print test: export at exactly 300 DPI for a 30mm x 40mm final print box.
   const printCanvas = document.createElement('canvas');
-  printCanvas.width = PASSPORT_PRINT_WIDTH_PX;
-  printCanvas.height = PASSPORT_PRINT_HEIGHT_PX;
+  printCanvas.width = PRINT_TEST_WIDTH_PX;
+  printCanvas.height = PRINT_TEST_HEIGHT_PX;
   const printCtx = printCanvas.getContext('2d');
   printCtx.imageSmoothingEnabled = true;
   printCtx.imageSmoothingQuality = 'high';
@@ -499,11 +503,11 @@ printBtn.addEventListener('click', () => {
   // Optimization: use toBlob to prevent massive base64 string allocations and browser crashes
   printCanvas.toBlob((blob) => {
     const photoUrl = URL.createObjectURL(blob);
-    console.log('Exact passport export:', PASSPORT_WIDTH_MM, 'x', PASSPORT_HEIGHT_MM, 'mm at', printCanvas.width, 'x', printCanvas.height, 'pixels');
+    console.log('Print size test export:', PRINT_TEST_WIDTH_MM, 'x', PRINT_TEST_HEIGHT_MM, 'mm at', printCanvas.width, 'x', printCanvas.height, 'pixels');
     
     let photos = '';
     for (let i = 0; i < copies; i++) {
-      photos += `<div class="photo-container"><img src="${photoUrl}" class="photo" alt="Passport Photo"></div>`;
+      photos += `<div class="photo-container" style="width:${PRINT_TEST_WIDTH_MM}mm !important;height:${PRINT_TEST_HEIGHT_MM}mm !important;min-width:${PRINT_TEST_WIDTH_MM}mm !important;min-height:${PRINT_TEST_HEIGHT_MM}mm !important;max-width:${PRINT_TEST_WIDTH_MM}mm !important;max-height:${PRINT_TEST_HEIGHT_MM}mm !important;flex:0 0 ${PRINT_TEST_WIDTH_MM}mm !important;box-sizing:border-box !important;overflow:hidden !important;"><img src="${photoUrl}" class="photo" alt="Passport Photo" style="width:${PRINT_TEST_WIDTH_MM}mm !important;height:${PRINT_TEST_HEIGHT_MM}mm !important;min-width:${PRINT_TEST_WIDTH_MM}mm !important;min-height:${PRINT_TEST_HEIGHT_MM}mm !important;max-width:${PRINT_TEST_WIDTH_MM}mm !important;max-height:${PRINT_TEST_HEIGHT_MM}mm !important;object-fit:cover !important;display:block !important;"></div>`;
     }
 
     const printWindow = window.open('', '_blank');
@@ -520,13 +524,17 @@ printBtn.addEventListener('click', () => {
         <meta charset="UTF-8">
         <title>Print Passport Photos</title>
         <style>
+          * { box-sizing: border-box !important; }
           html, body { margin: 0; padding: 0; background: white; font-family: sans-serif; }
           body { width: 210mm; min-height: 297mm; }
-          .sheet { padding: 15mm; display: grid; grid-template-columns: repeat(4, 35mm); grid-auto-rows: 45mm; gap: 5mm; align-content: start; justify-content: start; }
-          .photo-container { position: relative; width: 35mm; height: 45mm; box-sizing: border-box; overflow: hidden; outline: 0.2mm solid rgba(0, 0, 0, 0.4); }
-          .photo { position: absolute; inset: 0; width: 35mm; height: 45mm; max-width: none; max-height: none; display: block; object-fit: fill; image-rendering: high-quality; }
+          .sheet { padding: 15mm; display: flex !important; flex-flow: row wrap !important; gap: 5mm !important; align-content: flex-start !important; align-items: flex-start !important; justify-content: flex-start !important; width: 165mm !important; max-width: 165mm !important; min-width: 165mm !important; box-sizing: content-box !important; overflow: visible !important; transform: none !important; zoom: 1 !important; font-size: 0 !important; line-height: 0 !important; }
+          .photo-container { position: relative; display: block !important; vertical-align: top !important; margin: 0 !important; width: ${PRINT_TEST_WIDTH_MM}mm !important; height: ${PRINT_TEST_HEIGHT_MM}mm !important; min-width: ${PRINT_TEST_WIDTH_MM}mm !important; min-height: ${PRINT_TEST_HEIGHT_MM}mm !important; max-width: ${PRINT_TEST_WIDTH_MM}mm !important; max-height: ${PRINT_TEST_HEIGHT_MM}mm !important; box-sizing: border-box !important; overflow: hidden !important; outline: 0.2mm solid rgba(0, 0, 0, 0.4); flex: 0 0 ${PRINT_TEST_WIDTH_MM}mm !important; transform: none !important; zoom: 1 !important; }
+          .photo { position: absolute; inset: 0; width: ${PRINT_TEST_WIDTH_MM}mm !important; height: ${PRINT_TEST_HEIGHT_MM}mm !important; min-width: ${PRINT_TEST_WIDTH_MM}mm !important; min-height: ${PRINT_TEST_HEIGHT_MM}mm !important; max-width: ${PRINT_TEST_WIDTH_MM}mm !important; max-height: ${PRINT_TEST_HEIGHT_MM}mm !important; display: block !important; object-fit: cover !important; image-rendering: high-quality; transform: none !important; zoom: 1 !important; }
           @media print { 
             html, body { width: 210mm; height: 297mm; -webkit-print-color-adjust: exact; print-color-adjust: exact; } 
+            .sheet { display: flex !important; flex-flow: row wrap !important; gap: 5mm !important; align-content: flex-start !important; align-items: flex-start !important; justify-content: flex-start !important; width: 165mm !important; max-width: 165mm !important; min-width: 165mm !important; box-sizing: content-box !important; overflow: visible !important; transform: none !important; zoom: 1 !important; font-size: 0 !important; line-height: 0 !important; }
+            .photo-container { display: block !important; vertical-align: top !important; margin: 0 !important; width: ${PRINT_TEST_WIDTH_MM}mm !important; height: ${PRINT_TEST_HEIGHT_MM}mm !important; min-width: ${PRINT_TEST_WIDTH_MM}mm !important; min-height: ${PRINT_TEST_HEIGHT_MM}mm !important; max-width: ${PRINT_TEST_WIDTH_MM}mm !important; max-height: ${PRINT_TEST_HEIGHT_MM}mm !important; box-sizing: border-box !important; flex: 0 0 ${PRINT_TEST_WIDTH_MM}mm !important; overflow: hidden !important; transform: none !important; zoom: 1 !important; }
+            .photo { width: ${PRINT_TEST_WIDTH_MM}mm !important; height: ${PRINT_TEST_HEIGHT_MM}mm !important; min-width: ${PRINT_TEST_WIDTH_MM}mm !important; min-height: ${PRINT_TEST_HEIGHT_MM}mm !important; max-width: ${PRINT_TEST_WIDTH_MM}mm !important; max-height: ${PRINT_TEST_HEIGHT_MM}mm !important; object-fit: cover !important; display: block !important; transform: none !important; zoom: 1 !important; }
             @page { size: A4 portrait; margin: 0; } 
           }
         </style>
